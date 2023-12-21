@@ -6,6 +6,7 @@ public class UserDTO {
     private String id;
     private String firstName;
     private String lastName;
+    private int requestsRemaining;
     private LocalDateTime lastLoginTimeUtc;
 
     public UserDTO() {
@@ -40,6 +41,14 @@ public class UserDTO {
 
     public void setLastName(String lastName) {
         this.lastName = lastName;
+    }
+
+    public int getRequestsRemaining() {
+        return requestsRemaining;
+    }
+
+    public void setRequestsRemaining(int requestsRemaining) {
+        this.requestsRemaining = requestsRemaining;
     }
 
     public LocalDateTime getLastLoginTimeUtc() {
