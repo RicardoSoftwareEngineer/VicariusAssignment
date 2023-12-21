@@ -3,6 +3,8 @@ package io.vicarius.assignment.user;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 public class UserController {
 
@@ -10,22 +12,22 @@ public class UserController {
     UserService userService;
 
     @PostMapping(value = "/user/v1")
-    public Object create(@RequestBody UserDTO userDTO){
+    public UserDTO create(@RequestBody UserDTO userDTO){
         return userService.create(userDTO);
     }
 
     @GetMapping(value = "/user/v1")
-    public Object retrieve(){
+    public List<UserDTO> retrieve(){
         return userService.retrieve();
     }
 
     @GetMapping(value = "/user/v1/{id}")
-    public Object retrieveById(@PathVariable String id){
+    public UserDTO retrieveById(@PathVariable String id){
         return userService.retrieveById(id);
     }
 
     @PutMapping(value = "/user/v1/{id}")
-    public Object update(@PathVariable String id, @RequestBody UserDTO userDTO){
+    public UserDTO update(@PathVariable String id, @RequestBody UserDTO userDTO){
         return userService.update(userDTO, id);
     }
 
