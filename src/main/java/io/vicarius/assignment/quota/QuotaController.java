@@ -13,7 +13,7 @@ import java.util.List;
 public class QuotaController {
 
     @Autowired
-    QuotaService quotaService;
+    QuotaServiceImpl quotaService;
 
     @PostMapping(value = "/quota/v1/consume/{id}")
     public String consumeQuota(@PathVariable String id){

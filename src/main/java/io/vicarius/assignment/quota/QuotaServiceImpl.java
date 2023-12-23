@@ -1,39 +1,55 @@
 package io.vicarius.assignment.quota;
 
 import io.vicarius.assignment.user.UserDTO;
+import io.vicarius.assignment.user.UserMessages;
+import io.vicarius.assignment.user.UserRepository;
 import io.vicarius.assignment.user.UserServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+import java.util.Optional;
 
 @Service
-public class QuotaService {
+public class QuotaServiceImpl implements QuotaService{
     @Autowired
     UserServiceImpl userService;
+    @Autowired
+    QuotaRepository quotaRepository;
+    @Autowired
+    UserRepository userRepository;
     private static Integer QUOTA_LIMIT = 5;
-    private Map<String, Integer> quotaCache = new HashMap<>();
 
     public String consume(String id){
-        if(!quotaCache.containsKey(id)){
-            quotaCache.put(id, 0);
+        int totalRequestsMade;
+        Optional<Quota> quotaOptional = quotaRepository.findById(id);
+
+        if(quotaOptional.isEmpty()){
+            userRepository.findById(id)
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, UserMessages.USER_NOT_FOUND));
+            quotaRepository.save(new Quota(id, 1));
+            totalRequestsMade = 1;
+        }else{
+            Quota quota = quotaOptional.get();
+            if(quota.getTotalRequestsMade() == QUOTA_LIMIT){
+                throw new ResponseStatusException(HttpStatus.FORBIDDEN, QuotaMessages.QUOTA_LIMIT_REACHED);
+            }
+            quota.setTotalRequestsMade(quota.getTotalRequestsMade()+1);
+            quota = quotaRepository.save(quota);
+            totalRequestsMade = quota.getTotalRequestsMade();
         }
-        if(quotaCache.get(id) == QUOTA_LIMIT){
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, QuotaMessages.QUOTA_LIMIT_REACHED);
-        }
-        quotaCache.put(id, quotaCache.get(id)+1);
-        return "Total requests remaining for this user: " + (QUOTA_LIMIT - quotaCache.get(id));
+        return "Total requests remaining for this user: " + (QUOTA_LIMIT - totalRequestsMade);
     }
 
     public List<UserDTO> getUsersQuota(){
         List<UserDTO> userDTOS = userService.retrieve();
+        Optional<Quota> quota;
         for(UserDTO userDTO: userDTOS){
-            if(quotaCache.containsKey(userDTO.getId())){
-                userDTO.setRequestsRemaining(QUOTA_LIMIT - quotaCache.get(userDTO.getId()));
+            quota = quotaRepository.findById(userDTO.getId());
+            if(quota.isPresent()){
+                userDTO.setRequestsRemaining(QUOTA_LIMIT - quota.get().getTotalRequestsMade());
             }else{
                 userDTO.setRequestsRemaining(QUOTA_LIMIT);
             }
