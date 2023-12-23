@@ -9,7 +9,7 @@ import java.util.List;
 public class UserController {
 
     @Autowired
-    UserService userService;
+    UserServiceImpl userService;
 
     @PostMapping(value = "/user/v1")
     public UserDTO create(@RequestBody UserDTO userDTO){
