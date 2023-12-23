@@ -1,9 +1,7 @@
 package io.vicarius.assignment.quota;
 
 import io.vicarius.assignment.user.UserDTO;
-import io.vicarius.assignment.user.UserMessages;
-import io.vicarius.assignment.user.UserService;
-import org.apache.catalina.User;
+import io.vicarius.assignment.user.UserServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -16,7 +14,7 @@ import java.util.Map;
 @Service
 public class QuotaService {
     @Autowired
-    UserService userService;
+    UserServiceImpl userService;
     private static Integer QUOTA_LIMIT = 5;
     private Map<String, Integer> quotaCache = new HashMap<>();
 
