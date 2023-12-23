@@ -1,31 +1,24 @@
 package io.vicarius.assignment.user;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
-import org.hibernate.annotations.GenericGenerator;
+import org.springframework.data.elasticsearch.annotations.Document;
 import java.time.LocalDateTime;
 
-@Entity
-@Table(name = "UserTable")
-public class UserEntity {
-    @Id
-    @GeneratedValue(generator = "uuid2")
-    @GenericGenerator(name = "uuid2", strategy = "org.hibernate.id.UUIDGenerator")
+@Document(indexName = "user")
+public class UserDocument {
+    public UserDocument() {
+    }
+
+    public UserDocument(UserDTO userDTO) {
+        this.id = userDTO.getId();
+        this.firstName = userDTO.getFirstName();
+        this.lastName = userDTO.getLastName();
+        this.lastLoginTimeUtc = userDTO.getLastLoginTimeUtc();
+    }
+
     private String id;
     private String firstName;
     private String lastName;
     private LocalDateTime lastLoginTimeUtc;
-
-    public UserEntity() {
-    }
-
-    public UserEntity(UserDTO userDTO) {
-        this.id = userDTO.getId();
-        this.firstName = userDTO.getFirstName();
-        this.lastName = userDTO.getLastName();
-    }
 
     public String getId() {
         return id;

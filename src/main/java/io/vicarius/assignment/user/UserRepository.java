@@ -1,8 +1,6 @@
 package io.vicarius.assignment.user;
 
-import org.apache.catalina.User;
 import org.springframework.data.repository.CrudRepository;
-
 import java.util.List;
 import java.util.Optional;
 

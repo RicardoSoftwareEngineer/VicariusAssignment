@@ -1,15 +1,22 @@
 package io.vicarius.assignment.user;
 
+import java.io.Serializable;
 import java.time.LocalDateTime;
 
-public class UserDTO {
+public class UserDTO implements Serializable {
+    private static final long serialVersionUID = 1L;
     private String id;
     private String firstName;
     private String lastName;
+    private String operation;
     private int requestsRemaining;
     private LocalDateTime lastLoginTimeUtc;
 
     public UserDTO() {
+    }
+
+    public UserDTO(String id) {
+        this.id = id;
     }
 
     public UserDTO(UserEntity userEntity) {
@@ -17,6 +24,13 @@ public class UserDTO {
         this.firstName = userEntity.getFirstName();
         this.lastName = userEntity.getLastName();
         this.lastLoginTimeUtc = userEntity.getLastLoginTimeUtc();
+    }
+
+    public UserDTO(UserDocument userDocument) {
+        this.id = userDocument.getId();
+        this.firstName = userDocument.getFirstName();
+        this.lastName = userDocument.getLastName();
+        this.lastLoginTimeUtc = userDocument.getLastLoginTimeUtc();
     }
 
     public String getId() {
@@ -41,6 +55,14 @@ public class UserDTO {
 
     public void setLastName(String lastName) {
         this.lastName = lastName;
+    }
+
+    public String getOperation() {
+        return operation;
+    }
+
+    public void setOperation(String operation) {
+        this.operation = operation;
     }
 
     public int getRequestsRemaining() {

@@ -12,7 +12,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
-public class UserService {
+public class UserServiceImpl implements UserService{
     @Autowired
     UserRepository userRepository;
     @Autowired
@@ -23,7 +23,7 @@ public class UserService {
     public UserDTO create(UserDTO userDTO) {
         //Only printing functions during nighttime
         if(!util.isDayTime())
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, UserMessages.DB_CHANGES_NOT_ALLOWED_AT_NIGHT);
+            //throw new ResponseStatusException(HttpStatus.FORBIDDEN, UserMessages.DB_CHANGES_NOT_ALLOWED_AT_NIGHT);
         if(!StringUtils.hasText(userDTO.getFirstName()))
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, UserMessages.MISSING_FIRST_NAME);
         if(!StringUtils.hasText(userDTO.getFirstName()))
