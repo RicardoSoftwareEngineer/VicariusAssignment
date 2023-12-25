@@ -33,7 +33,7 @@ class UserControllerIntegrationTests {
 	private UserServiceImpl userService;
 
 	@Test
-	void testCreateAndDeleteUser() throws Exception {
+	void testCreateUser() throws Exception {
 		UserDTO user = new UserDTO("Ricardo", "Ribeiro");
 		mockMvc.perform(post("/user/v1")
 						.contentType(MediaType.APPLICATION_JSON)
@@ -45,28 +45,7 @@ class UserControllerIntegrationTests {
 	}
 
 	@Test
-	void testGetUserById() throws Exception {
-		UserDTO user = new UserDTO("Ricardo", "Ribeiro");
-		String contentAsString = mockMvc.perform(post("/user/v1")
-						.contentType(MediaType.APPLICATION_JSON)
-						.content(objectMapper.writeValueAsString(user)))
-				.andExpect(status().isOk())
-				.andExpect(jsonPath("$.id").isString())
-				.andExpect(jsonPath("$.firstName").value(user.getFirstName()))
-				.andExpect(jsonPath("$.lastName").value(user.getLastName()))
-				.andReturn().getResponse().getContentAsString();
-
-		String userId = objectMapper.readTree(contentAsString).get("id").asText();
-
-		mockMvc.perform(get("/user/v1/{id}", userId))
-				.andExpect(status().isOk())
-				.andExpect(jsonPath("$.id").value(userId))
-				.andExpect(jsonPath("$.firstName").value(user.getFirstName()))
-				.andExpect(jsonPath("$.lastName").value(user.getLastName()));
-	}
-
-	@Test
-	void testGetUsers() throws Exception {
+	void testRetrieveUsers() throws Exception {
 		UserDTO user1 = new UserDTO("Ricardo", "Ribeiro");
 		mockMvc.perform(post("/user/v1")
 						.contentType(MediaType.APPLICATION_JSON)
@@ -86,6 +65,27 @@ class UserControllerIntegrationTests {
 				.andExpect(jsonPath("$[0].lastName").value("Ribeiro"))
 				.andExpect(jsonPath("$[1].firstName").value("Ricardo"))
 				.andExpect(jsonPath("$[1].lastName").value("Rib"));
+	}
+
+	@Test
+	void testRetrieveUserById() throws Exception {
+		UserDTO user = new UserDTO("Ricardo", "Ribeiro");
+		String contentAsString = mockMvc.perform(post("/user/v1")
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(objectMapper.writeValueAsString(user)))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.id").isString())
+				.andExpect(jsonPath("$.firstName").value(user.getFirstName()))
+				.andExpect(jsonPath("$.lastName").value(user.getLastName()))
+				.andReturn().getResponse().getContentAsString();
+
+		String userId = objectMapper.readTree(contentAsString).get("id").asText();
+
+		mockMvc.perform(get("/user/v1/{id}", userId))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.id").value(userId))
+				.andExpect(jsonPath("$.firstName").value(user.getFirstName()))
+				.andExpect(jsonPath("$.lastName").value(user.getLastName()));
 	}
 
 	@Test
@@ -138,5 +138,39 @@ class UserControllerIntegrationTests {
 
 		mockMvc.perform(get("/user/v1/{id}", userId))
 				.andExpect(status().isNotFound());
+	}
+
+	@Test
+	void testUserIdempotency() throws Exception {
+		UserDTO user = new UserDTO("Ricardo", "Ribeiro");
+		mockMvc.perform(post("/user/v1")
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(objectMapper.writeValueAsString(user)))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.id").isString())
+				.andExpect(jsonPath("$.firstName").value(user.getFirstName()))
+				.andExpect(jsonPath("$.lastName").value(user.getLastName()));
+
+		mockMvc.perform(post("/user/v1")
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(objectMapper.writeValueAsString(user)))
+				.andExpect(status().isForbidden());
+	}
+
+	@Test
+	void testUserMissingField() throws Exception {
+		UserDTO user = new UserDTO("Ricardo", "Ribeiro");
+		user.setFirstName(null);
+		mockMvc.perform(post("/user/v1")
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(objectMapper.writeValueAsString(user)))
+				.andExpect(status().isBadRequest());
+
+		user = new UserDTO("Ricardo", "Ribeiro");
+		user.setLastName(null);
+		mockMvc.perform(post("/user/v1")
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(objectMapper.writeValueAsString(user)))
+				.andExpect(status().isBadRequest());
 	}
 }
