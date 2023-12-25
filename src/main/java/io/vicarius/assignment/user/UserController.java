@@ -18,7 +18,7 @@ public class UserController {
 
     @GetMapping(value = "/user/v1")
     public List<UserDTO> retrieve(){
-        return userService.retrieve();
+        return userService.retrieveAll();
     }
 
     @GetMapping(value = "/user/v1/{id}")
