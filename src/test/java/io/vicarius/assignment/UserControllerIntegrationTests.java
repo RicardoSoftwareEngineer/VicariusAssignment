@@ -67,10 +67,10 @@ class UserControllerIntegrationTests {
 			mockMvc.perform(get("/user/v1"))
 					.andExpect(status().isOk())
 					.andExpect(jsonPath("$", hasSize(2)))
-					.andExpect(jsonPath("$[0].firstName").value("Ricardo"))
-					.andExpect(jsonPath("$[0].lastName").value("Ribeiro"))
-					.andExpect(jsonPath("$[1].firstName").value("Ricardo"))
-					.andExpect(jsonPath("$[1].lastName").value("Rib"));
+					.andExpect(jsonPath("$[0].firstName").value(user1.getFirstName()))
+					.andExpect(jsonPath("$[0].lastName").value(user1.getLastName()))
+					.andExpect(jsonPath("$[1].firstName").value(user2.getFirstName()))
+					.andExpect(jsonPath("$[1].lastName").value(user2.getLastName()));
 		}
 	}
 
