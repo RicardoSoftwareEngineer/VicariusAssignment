@@ -5,10 +5,11 @@
 #### - Start the Spring Boot project.
 
 ## Architecture:
+#### - RabbitMQ used for database synchronization.
 #### - H2 database used as SQL database during daytime.
 #### - Elasticsearch used as NoSQL database during nighttime.
 #### - Redis used as shared cache to limit the requests number per user.
-#### - RabbitMQ used for database synchronization.
+#### - QUOTA_LIMIT is the environment variable responsible for the user request limit.
 
 ## Requirements:
 #### - User CRUD operations.

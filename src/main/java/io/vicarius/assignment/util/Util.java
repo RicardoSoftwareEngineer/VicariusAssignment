@@ -23,6 +23,8 @@ public class Util {
     public static final String OPERATION_CREATE = "create";
     public static final String OPERATION_UPDATE = "update";
     public static final String OPERATION_DELETE = "delete";
+    public static Integer QUOTA_LIMIT = System.getenv("QUOTA_LIMIT") != null ?
+            Integer.valueOf(System.getenv("QUOTA_LIMIT")) : 5;
 
     public void sendCreateOperationToQueue(UserDTO userDTO){
         userDTO.setOperation(OPERATION_CREATE);
