@@ -13,7 +13,6 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.hamcrest.Matchers.hasSize;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -34,38 +33,51 @@ class UserControllerIntegrationTests {
 	private UserServiceImpl userService;
 
 	@Test
-	@DirtiesContext(methodMode = DirtiesContext.MethodMode.AFTER_METHOD)
 	void testCreateAndDeleteUser() throws Exception {
-		UserDTO userDTO = new UserDTO("Ricardo", "Ribeiro");
+		UserDTO user = new UserDTO("Ricardo", "Ribeiro");
 		mockMvc.perform(post("/user/v1")
 						.contentType(MediaType.APPLICATION_JSON)
-						.content(objectMapper.writeValueAsString(userDTO)))
+						.content(objectMapper.writeValueAsString(user)))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.id").isString())
-				.andExpect(jsonPath("$.firstName").value("Ricardo"))
-				.andExpect(jsonPath("$.lastName").value("Ribeiro"));
+				.andExpect(jsonPath("$.firstName").value(user.getFirstName()))
+				.andExpect(jsonPath("$.lastName").value(user.getLastName()));
 	}
 
 	@Test
-	@DirtiesContext(methodMode = DirtiesContext.MethodMode.AFTER_METHOD)
 	void testGetUserById() throws Exception {
 		UserDTO user = new UserDTO("Ricardo", "Ribeiro");
-		user = userService.create(user);
-
-		mockMvc.perform(get("/user/v1/{id}", user.getId()))
+		String contentAsString = mockMvc.perform(post("/user/v1")
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(objectMapper.writeValueAsString(user)))
 				.andExpect(status().isOk())
-				.andExpect(jsonPath("$.id").value(user.getId()))
-				.andExpect(jsonPath("$.firstName").value("Ricardo"))
-				.andExpect(jsonPath("$.lastName").value("Ribeiro"));
+				.andExpect(jsonPath("$.id").isString())
+				.andExpect(jsonPath("$.firstName").value(user.getFirstName()))
+				.andExpect(jsonPath("$.lastName").value(user.getLastName()))
+				.andReturn().getResponse().getContentAsString();
+
+		String userId = objectMapper.readTree(contentAsString).get("id").asText();
+
+		mockMvc.perform(get("/user/v1/{id}", userId))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.id").value(userId))
+				.andExpect(jsonPath("$.firstName").value(user.getFirstName()))
+				.andExpect(jsonPath("$.lastName").value(user.getLastName()));
 	}
 
 	@Test
 	void testGetUsers() throws Exception {
 		UserDTO user1 = new UserDTO("Ricardo", "Ribeiro");
-		userService.create(user1);
+		mockMvc.perform(post("/user/v1")
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(objectMapper.writeValueAsString(user1)))
+				.andExpect(status().isOk());
 
 		UserDTO user2 = new UserDTO("Ricardo", "Rib");
-		userService.create(user2);
+		mockMvc.perform(post("/user/v1")
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(objectMapper.writeValueAsString(user2)))
+				.andExpect(status().isOk());
 
 		mockMvc.perform(get("/user/v1"))
 				.andExpect(status().isOk())
@@ -79,28 +91,52 @@ class UserControllerIntegrationTests {
 	@Test
 	void testUpdateUser() throws Exception {
 		UserDTO user = new UserDTO("Ricardo", "Ribeiro");
-		userService.create(user);
-		user.setFirstName("Ric");
-		user.setLastName("Rib");
-
-		mockMvc.perform(put("/user/v1/{id}", user.getId())
+		String contentAsString = mockMvc.perform(post("/user/v1")
 						.contentType(MediaType.APPLICATION_JSON)
 						.content(objectMapper.writeValueAsString(user)))
 				.andExpect(status().isOk())
-				.andExpect(jsonPath("$.id").value(user.getId()))
-				.andExpect(jsonPath("$.firstName").value("Ric"))
-				.andExpect(jsonPath("$.lastName").value("Rib"));
+				.andExpect(jsonPath("$.id").isString())
+				.andExpect(jsonPath("$.firstName").value(user.getFirstName()))
+				.andExpect(jsonPath("$.lastName").value(user.getLastName()))
+				.andReturn().getResponse().getContentAsString();
+
+		String userId = objectMapper.readTree(contentAsString).get("id").asText();
+		user.setFirstName("Ric");
+		user.setLastName("Rib");
+
+		mockMvc.perform(put("/user/v1/{id}", userId)
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(objectMapper.writeValueAsString(user)))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.id").value(userId))
+				.andExpect(jsonPath("$.firstName").value(user.getFirstName()))
+				.andExpect(jsonPath("$.lastName").value(user.getLastName()));
+
+		mockMvc.perform(get("/user/v1/{id}", userId))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.id").value(userId))
+				.andExpect(jsonPath("$.firstName").value(user.getFirstName()))
+				.andExpect(jsonPath("$.lastName").value(user.getLastName()));
 	}
 
 	@Test
 	void testDeleteUser() throws Exception {
 		UserDTO user = new UserDTO("Ricardo", "Ribeiro");
-		userService.create(user);
+		String contentAsString = mockMvc.perform(post("/user/v1")
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(objectMapper.writeValueAsString(user)))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.id").isString())
+				.andExpect(jsonPath("$.firstName").value(user.getFirstName()))
+				.andExpect(jsonPath("$.lastName").value(user.getLastName()))
+				.andReturn().getResponse().getContentAsString();
 
-		mockMvc.perform(delete("/user/v1/{id}", user.getId()))
+		String userId = objectMapper.readTree(contentAsString).get("id").asText();
+
+		mockMvc.perform(delete("/user/v1/{id}", userId))
 				.andExpect(status().isOk());
 
-		mockMvc.perform(get("/user/v1/{id}", user.getId()))
+		mockMvc.perform(get("/user/v1/{id}", userId))
 				.andExpect(status().isNotFound());
 	}
 }
