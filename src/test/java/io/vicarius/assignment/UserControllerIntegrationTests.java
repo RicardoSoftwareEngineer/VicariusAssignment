@@ -72,6 +72,10 @@ class UserControllerIntegrationTests {
 					.andExpect(jsonPath("$[1].firstName").value(user2.getFirstName()))
 					.andExpect(jsonPath("$[1].lastName").value(user2.getLastName()));
 		}
+		if(!util.isDayTime()){
+			mockMvc.perform(get("/user/v1"))
+					.andExpect(status().isOk());
+		}
 	}
 
 	@Test
