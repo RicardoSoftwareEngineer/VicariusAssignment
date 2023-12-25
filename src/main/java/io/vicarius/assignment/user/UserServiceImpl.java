@@ -37,7 +37,7 @@ public class UserServiceImpl implements UserService{
         return userDTO;
     }
 
-    public List<UserDTO> retrieve(){
+    public List<UserDTO> retrieveAll(){
         if(util.isDayTime()){
             return userRepository.findAll()
                     .stream()
