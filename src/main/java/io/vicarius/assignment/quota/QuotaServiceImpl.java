@@ -44,7 +44,7 @@ public class QuotaServiceImpl implements QuotaService{
     }
 
     public List<UserDTO> getUsersQuota(){
-        List<UserDTO> userDTOS = userService.retrieve();
+        List<UserDTO> userDTOS = userService.retrieveAll();
         Optional<Quota> quota;
         for(UserDTO userDTO: userDTOS){
             quota = quotaRepository.findById(userDTO.getId());
