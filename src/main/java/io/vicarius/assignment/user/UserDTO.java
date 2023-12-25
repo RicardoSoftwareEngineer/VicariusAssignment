@@ -19,6 +19,11 @@ public class UserDTO implements Serializable {
         this.id = id;
     }
 
+    public UserDTO(String firstName, String lastName) {
+        this.firstName = firstName;
+        this.lastName = lastName;
+    }
+
     public UserDTO(UserEntity userEntity) {
         this.id = userEntity.getId();
         this.firstName = userEntity.getFirstName();

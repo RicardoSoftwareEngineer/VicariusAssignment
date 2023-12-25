@@ -5,9 +5,11 @@ import io.vicarius.assignment.user.UserDTO;
 import io.vicarius.assignment.user.UserServiceImpl;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.hamcrest.Matchers.hasSize;
@@ -18,6 +20,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureMockMvc
+@DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
+@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.ANY)
 class UserControllerIntegrationTests {
 
 	@Autowired
@@ -30,7 +34,8 @@ class UserControllerIntegrationTests {
 	private UserServiceImpl userService;
 
 	@Test
-	void testCreateProduct() throws Exception {
+	@DirtiesContext(methodMode = DirtiesContext.MethodMode.AFTER_METHOD)
+	void testCreateAndDeleteUser() throws Exception {
 		UserDTO userDTO = new UserDTO("Ricardo", "Ribeiro");
 		mockMvc.perform(post("/user/v1")
 						.contentType(MediaType.APPLICATION_JSON)
@@ -42,8 +47,9 @@ class UserControllerIntegrationTests {
 	}
 
 	@Test
+	@DirtiesContext(methodMode = DirtiesContext.MethodMode.AFTER_METHOD)
 	void testGetUserById() throws Exception {
-		UserDTO user = userService.create(new UserDTO("Ricardo", "Ribeiro"));
+		UserDTO user = new UserDTO("Ricardo", "Ribeiro");
 		user = userService.create(user);
 
 		mockMvc.perform(get("/user/v1/{id}", user.getId()))
@@ -55,10 +61,10 @@ class UserControllerIntegrationTests {
 
 	@Test
 	void testGetUsers() throws Exception {
-		UserDTO user1 = userService.create(new UserDTO("Ricardo", "Ribeiro"));
+		UserDTO user1 = new UserDTO("Ricardo", "Ribeiro");
 		userService.create(user1);
 
-		UserDTO user2 = userService.create(new UserDTO("Ricardo", "Rib"));
+		UserDTO user2 = new UserDTO("Ricardo", "Rib");
 		userService.create(user2);
 
 		mockMvc.perform(get("/user/v1"))
@@ -72,7 +78,7 @@ class UserControllerIntegrationTests {
 
 	@Test
 	void testUpdateUser() throws Exception {
-		UserDTO user = userService.create(new UserDTO("Ricardo", "Ribeiro"));
+		UserDTO user = new UserDTO("Ricardo", "Ribeiro");
 		userService.create(user);
 		user.setFirstName("Ric");
 		user.setLastName("Rib");
@@ -88,13 +94,13 @@ class UserControllerIntegrationTests {
 
 	@Test
 	void testDeleteUser() throws Exception {
-		UserDTO user = userService.create(new UserDTO("Ricardo", "Ribeiro"));
+		UserDTO user = new UserDTO("Ricardo", "Ribeiro");
 		userService.create(user);
 
 		mockMvc.perform(delete("/user/v1/{id}", user.getId()))
 				.andExpect(status().isOk());
 
-		user = userService.retrieveById(user.getId());
-		assertTrue(user != null);
+		mockMvc.perform(get("/user/v1/{id}", user.getId()))
+				.andExpect(status().isNotFound());
 	}
 }
