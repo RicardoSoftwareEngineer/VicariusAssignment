@@ -23,10 +23,10 @@ public class UserServiceImpl implements UserService{
     public UserDTO create(UserDTO userDTO) {
         //Only printing functions during nighttime
         if(!util.isDayTime())
-            //throw new ResponseStatusException(HttpStatus.FORBIDDEN, UserMessages.DB_CHANGES_NOT_ALLOWED_AT_NIGHT);
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, UserMessages.DB_CHANGES_NOT_ALLOWED_AT_NIGHT);
         if(!StringUtils.hasText(userDTO.getFirstName()))
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, UserMessages.MISSING_FIRST_NAME);
-        if(!StringUtils.hasText(userDTO.getFirstName()))
+        if(!StringUtils.hasText(userDTO.getLastName()))
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, UserMessages.MISSING_LAST_NAME);
         if(userRepository.findByFirstNameAndLastName(userDTO.getFirstName(), userDTO.getLastName()).isPresent())
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, UserMessages.USER_ALREADY_EXISTS);
@@ -72,7 +72,7 @@ public class UserServiceImpl implements UserService{
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, UserMessages.DB_CHANGES_NOT_ALLOWED_AT_NIGHT);
         if(!StringUtils.hasText(userDTO.getFirstName()))
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, UserMessages.MISSING_FIRST_NAME);
-        if(!StringUtils.hasText(userDTO.getFirstName()))
+        if(!StringUtils.hasText(userDTO.getLastName()))
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, UserMessages.MISSING_LAST_NAME);
 
         if(userRepository.findById(id).isEmpty())
