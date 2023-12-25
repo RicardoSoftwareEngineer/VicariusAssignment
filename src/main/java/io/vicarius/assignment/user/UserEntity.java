@@ -21,6 +21,11 @@ public class UserEntity {
     public UserEntity() {
     }
 
+    public UserEntity(String firstName, String lastName) {
+        this.firstName = firstName;
+        this.lastName = lastName;
+    }
+
     public UserEntity(UserDTO userDTO) {
         this.id = userDTO.getId();
         this.firstName = userDTO.getFirstName();
