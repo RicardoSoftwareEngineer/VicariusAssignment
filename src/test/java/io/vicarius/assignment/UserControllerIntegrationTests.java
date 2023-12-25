@@ -2,7 +2,7 @@ package io.vicarius.assignment;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.vicarius.assignment.user.UserDTO;
-import io.vicarius.assignment.user.UserServiceImpl;
+import io.vicarius.assignment.util.Util;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
@@ -28,149 +28,176 @@ class UserControllerIntegrationTests {
 
 	@Autowired
 	ObjectMapper objectMapper;
-
-	@Autowired
-	private UserServiceImpl userService;
-
+	private Util util = new Util();
 	@Test
 	void testCreateUser() throws Exception {
 		UserDTO user = new UserDTO("Ricardo", "Ribeiro");
-		mockMvc.perform(post("/user/v1")
-						.contentType(MediaType.APPLICATION_JSON)
-						.content(objectMapper.writeValueAsString(user)))
-				.andExpect(status().isOk())
-				.andExpect(jsonPath("$.id").isString())
-				.andExpect(jsonPath("$.firstName").value(user.getFirstName()))
-				.andExpect(jsonPath("$.lastName").value(user.getLastName()));
+		if(util.isDayTime()){
+			mockMvc.perform(post("/user/v1")
+							.contentType(MediaType.APPLICATION_JSON)
+							.content(objectMapper.writeValueAsString(user)))
+					.andExpect(status().isOk())
+					.andExpect(jsonPath("$.id").isString())
+					.andExpect(jsonPath("$.firstName").value(user.getFirstName()))
+					.andExpect(jsonPath("$.lastName").value(user.getLastName()));
+		}
+		if(!util.isDayTime()){
+			mockMvc.perform(post("/user/v1")
+							.contentType(MediaType.APPLICATION_JSON)
+							.content(objectMapper.writeValueAsString(user)))
+					.andExpect(status().isForbidden());
+		}
 	}
 
 	@Test
 	void testRetrieveUsers() throws Exception {
 		UserDTO user1 = new UserDTO("Ricardo", "Ribeiro");
-		mockMvc.perform(post("/user/v1")
-						.contentType(MediaType.APPLICATION_JSON)
-						.content(objectMapper.writeValueAsString(user1)))
-				.andExpect(status().isOk());
+		if(util.isDayTime()){
+			mockMvc.perform(post("/user/v1")
+							.contentType(MediaType.APPLICATION_JSON)
+							.content(objectMapper.writeValueAsString(user1)))
+					.andExpect(status().isOk());
 
-		UserDTO user2 = new UserDTO("Ricardo", "Rib");
-		mockMvc.perform(post("/user/v1")
-						.contentType(MediaType.APPLICATION_JSON)
-						.content(objectMapper.writeValueAsString(user2)))
-				.andExpect(status().isOk());
+			UserDTO user2 = new UserDTO("Ricardo", "Rib");
+			mockMvc.perform(post("/user/v1")
+							.contentType(MediaType.APPLICATION_JSON)
+							.content(objectMapper.writeValueAsString(user2)))
+					.andExpect(status().isOk());
 
-		mockMvc.perform(get("/user/v1"))
-				.andExpect(status().isOk())
-				.andExpect(jsonPath("$", hasSize(2)))
-				.andExpect(jsonPath("$[0].firstName").value("Ricardo"))
-				.andExpect(jsonPath("$[0].lastName").value("Ribeiro"))
-				.andExpect(jsonPath("$[1].firstName").value("Ricardo"))
-				.andExpect(jsonPath("$[1].lastName").value("Rib"));
+			mockMvc.perform(get("/user/v1"))
+					.andExpect(status().isOk())
+					.andExpect(jsonPath("$", hasSize(2)))
+					.andExpect(jsonPath("$[0].firstName").value("Ricardo"))
+					.andExpect(jsonPath("$[0].lastName").value("Ribeiro"))
+					.andExpect(jsonPath("$[1].firstName").value("Ricardo"))
+					.andExpect(jsonPath("$[1].lastName").value("Rib"));
+		}
 	}
 
 	@Test
 	void testRetrieveUserById() throws Exception {
 		UserDTO user = new UserDTO("Ricardo", "Ribeiro");
-		String contentAsString = mockMvc.perform(post("/user/v1")
-						.contentType(MediaType.APPLICATION_JSON)
-						.content(objectMapper.writeValueAsString(user)))
-				.andExpect(status().isOk())
-				.andExpect(jsonPath("$.id").isString())
-				.andExpect(jsonPath("$.firstName").value(user.getFirstName()))
-				.andExpect(jsonPath("$.lastName").value(user.getLastName()))
-				.andReturn().getResponse().getContentAsString();
+		if(util.isDayTime()){
+			String contentAsString = mockMvc.perform(post("/user/v1")
+							.contentType(MediaType.APPLICATION_JSON)
+							.content(objectMapper.writeValueAsString(user)))
+					.andExpect(status().isOk())
+					.andExpect(jsonPath("$.id").isString())
+					.andExpect(jsonPath("$.firstName").value(user.getFirstName()))
+					.andExpect(jsonPath("$.lastName").value(user.getLastName()))
+					.andReturn().getResponse().getContentAsString();
 
-		String userId = objectMapper.readTree(contentAsString).get("id").asText();
+			String userId = objectMapper.readTree(contentAsString).get("id").asText();
 
-		mockMvc.perform(get("/user/v1/{id}", userId))
-				.andExpect(status().isOk())
-				.andExpect(jsonPath("$.id").value(userId))
-				.andExpect(jsonPath("$.firstName").value(user.getFirstName()))
-				.andExpect(jsonPath("$.lastName").value(user.getLastName()));
+			mockMvc.perform(get("/user/v1/{id}", userId))
+					.andExpect(status().isOk())
+					.andExpect(jsonPath("$.id").value(userId))
+					.andExpect(jsonPath("$.firstName").value(user.getFirstName()))
+					.andExpect(jsonPath("$.lastName").value(user.getLastName()));
+		}
 	}
 
 	@Test
 	void testUpdateUser() throws Exception {
 		UserDTO user = new UserDTO("Ricardo", "Ribeiro");
-		String contentAsString = mockMvc.perform(post("/user/v1")
-						.contentType(MediaType.APPLICATION_JSON)
-						.content(objectMapper.writeValueAsString(user)))
-				.andExpect(status().isOk())
-				.andExpect(jsonPath("$.id").isString())
-				.andExpect(jsonPath("$.firstName").value(user.getFirstName()))
-				.andExpect(jsonPath("$.lastName").value(user.getLastName()))
-				.andReturn().getResponse().getContentAsString();
+		if(util.isDayTime()){
+			String contentAsString = mockMvc.perform(post("/user/v1")
+							.contentType(MediaType.APPLICATION_JSON)
+							.content(objectMapper.writeValueAsString(user)))
+					.andExpect(status().isOk())
+					.andExpect(jsonPath("$.id").isString())
+					.andExpect(jsonPath("$.firstName").value(user.getFirstName()))
+					.andExpect(jsonPath("$.lastName").value(user.getLastName()))
+					.andReturn().getResponse().getContentAsString();
 
-		String userId = objectMapper.readTree(contentAsString).get("id").asText();
-		user.setFirstName("Ric");
-		user.setLastName("Rib");
+			String userId = objectMapper.readTree(contentAsString).get("id").asText();
+			user.setFirstName("Ric");
+			user.setLastName("Rib");
 
-		mockMvc.perform(put("/user/v1/{id}", userId)
-						.contentType(MediaType.APPLICATION_JSON)
-						.content(objectMapper.writeValueAsString(user)))
-				.andExpect(status().isOk())
-				.andExpect(jsonPath("$.id").value(userId))
-				.andExpect(jsonPath("$.firstName").value(user.getFirstName()))
-				.andExpect(jsonPath("$.lastName").value(user.getLastName()));
+			mockMvc.perform(put("/user/v1/{id}", userId)
+							.contentType(MediaType.APPLICATION_JSON)
+							.content(objectMapper.writeValueAsString(user)))
+					.andExpect(status().isOk())
+					.andExpect(jsonPath("$.id").value(userId))
+					.andExpect(jsonPath("$.firstName").value(user.getFirstName()))
+					.andExpect(jsonPath("$.lastName").value(user.getLastName()));
 
-		mockMvc.perform(get("/user/v1/{id}", userId))
-				.andExpect(status().isOk())
-				.andExpect(jsonPath("$.id").value(userId))
-				.andExpect(jsonPath("$.firstName").value(user.getFirstName()))
-				.andExpect(jsonPath("$.lastName").value(user.getLastName()));
+			mockMvc.perform(get("/user/v1/{id}", userId))
+					.andExpect(status().isOk())
+					.andExpect(jsonPath("$.id").value(userId))
+					.andExpect(jsonPath("$.firstName").value(user.getFirstName()))
+					.andExpect(jsonPath("$.lastName").value(user.getLastName()));
+		}
+		if(!util.isDayTime()){
+			mockMvc.perform(put("/user/v1/{id}", "userId")
+							.contentType(MediaType.APPLICATION_JSON)
+							.content(objectMapper.writeValueAsString(user)))
+					.andExpect(status().isForbidden());
+		}
 	}
 
 	@Test
 	void testDeleteUser() throws Exception {
 		UserDTO user = new UserDTO("Ricardo", "Ribeiro");
-		String contentAsString = mockMvc.perform(post("/user/v1")
-						.contentType(MediaType.APPLICATION_JSON)
-						.content(objectMapper.writeValueAsString(user)))
-				.andExpect(status().isOk())
-				.andExpect(jsonPath("$.id").isString())
-				.andExpect(jsonPath("$.firstName").value(user.getFirstName()))
-				.andExpect(jsonPath("$.lastName").value(user.getLastName()))
-				.andReturn().getResponse().getContentAsString();
+		if(util.isDayTime()){
+			String contentAsString = mockMvc.perform(post("/user/v1")
+							.contentType(MediaType.APPLICATION_JSON)
+							.content(objectMapper.writeValueAsString(user)))
+					.andExpect(status().isOk())
+					.andExpect(jsonPath("$.id").isString())
+					.andExpect(jsonPath("$.firstName").value(user.getFirstName()))
+					.andExpect(jsonPath("$.lastName").value(user.getLastName()))
+					.andReturn().getResponse().getContentAsString();
 
-		String userId = objectMapper.readTree(contentAsString).get("id").asText();
+			String userId = objectMapper.readTree(contentAsString).get("id").asText();
 
-		mockMvc.perform(delete("/user/v1/{id}", userId))
-				.andExpect(status().isOk());
+			mockMvc.perform(delete("/user/v1/{id}", userId))
+					.andExpect(status().isOk());
 
-		mockMvc.perform(get("/user/v1/{id}", userId))
-				.andExpect(status().isNotFound());
+			mockMvc.perform(get("/user/v1/{id}", userId))
+					.andExpect(status().isNotFound());
+		}
+		if(!util.isDayTime()){
+			mockMvc.perform(delete("/user/v1/{id}", "userId"))
+					.andExpect(status().isForbidden());
+		}
 	}
 
 	@Test
 	void testUserIdempotency() throws Exception {
 		UserDTO user = new UserDTO("Ricardo", "Ribeiro");
-		mockMvc.perform(post("/user/v1")
-						.contentType(MediaType.APPLICATION_JSON)
-						.content(objectMapper.writeValueAsString(user)))
-				.andExpect(status().isOk())
-				.andExpect(jsonPath("$.id").isString())
-				.andExpect(jsonPath("$.firstName").value(user.getFirstName()))
-				.andExpect(jsonPath("$.lastName").value(user.getLastName()));
+		if(util.isDayTime()){
+			mockMvc.perform(post("/user/v1")
+							.contentType(MediaType.APPLICATION_JSON)
+							.content(objectMapper.writeValueAsString(user)))
+					.andExpect(status().isOk())
+					.andExpect(jsonPath("$.id").isString())
+					.andExpect(jsonPath("$.firstName").value(user.getFirstName()))
+					.andExpect(jsonPath("$.lastName").value(user.getLastName()));
 
-		mockMvc.perform(post("/user/v1")
-						.contentType(MediaType.APPLICATION_JSON)
-						.content(objectMapper.writeValueAsString(user)))
-				.andExpect(status().isForbidden());
+			mockMvc.perform(post("/user/v1")
+							.contentType(MediaType.APPLICATION_JSON)
+							.content(objectMapper.writeValueAsString(user)))
+					.andExpect(status().isForbidden());
+		}
 	}
 
 	@Test
 	void testUserMissingField() throws Exception {
 		UserDTO user = new UserDTO("Ricardo", "Ribeiro");
-		user.setFirstName(null);
-		mockMvc.perform(post("/user/v1")
-						.contentType(MediaType.APPLICATION_JSON)
-						.content(objectMapper.writeValueAsString(user)))
-				.andExpect(status().isBadRequest());
+		if(util.isDayTime()){
+			user.setFirstName(null);
+			mockMvc.perform(post("/user/v1")
+							.contentType(MediaType.APPLICATION_JSON)
+							.content(objectMapper.writeValueAsString(user)))
+					.andExpect(status().isBadRequest());
 
-		user = new UserDTO("Ricardo", "Ribeiro");
-		user.setLastName(null);
-		mockMvc.perform(post("/user/v1")
-						.contentType(MediaType.APPLICATION_JSON)
-						.content(objectMapper.writeValueAsString(user)))
-				.andExpect(status().isBadRequest());
+			user = new UserDTO("Ricardo", "Ribeiro");
+			user.setLastName(null);
+			mockMvc.perform(post("/user/v1")
+							.contentType(MediaType.APPLICATION_JSON)
+							.content(objectMapper.writeValueAsString(user)))
+					.andExpect(status().isBadRequest());
+		}
 	}
 }
