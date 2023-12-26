@@ -1,24 +1,34 @@
 # Vicarius assignment
-## How to get up and running:
-#### - Run "docker compose up" in the project´s directory.
-#### - Import the pom file as a maven project using Intellij or Eclipse IDE.
-#### - Start the Spring Boot project.
+
+## Requirements:
+#### - User CRUD operations.
+#### - Robust access-limiting mechanism through shared cache.
+#### - Synchronization between 2 databases through message queue.
+#### - SQL database during daytime and Elasticsearch during nighttime.
+
 
 ## Architecture:
+#### - Is important to say that this microservice was made with scalability in mind, the idea is to get a thousand or more instances of this connecting to the same Redis, RabbitMQ, Elastic and SQL services. H2 was choose for simplicity’s sake, this is just a proof of concept. For production deployment is better to replace with Postgres or MariaDB.
 #### - RabbitMQ used for database synchronization.
 #### - H2 database used as SQL database during daytime.
 #### - Elasticsearch used as NoSQL database during nighttime.
 #### - Redis used as shared cache to limit the requests number per user.
-#### - QUOTA_LIMIT is the environment variable responsible for the user request limit.
+#### - Configurable maximum requests per user through the environment variable:
++ QUOTA_LIMIT (default value: 5)
 
-## Requirements:
-#### - User CRUD operations.
-#### - Database is SQL during the day and NoSQL during nighttime.
-#### - Configurable limit for total requests per user. 
+## How to get up and running:
+#### - Run "docker compose up" in the project´s directory to get:
++ RabbitMQ
++ Redis cache
++ Elastic search
+#### - The project will use these services without any configuration of yours.
+#### - Import the pom file as a maven project.
+#### - Start the Spring Boot project.
 
 ## Endpoints to interact with:
 #### - POST http://localhost:8080/user/v1
-#### - Body example{
+#### - Body example
+#### {
     "firstName":"Ricardo",
     "lastName":"Ribeiro"
 }
