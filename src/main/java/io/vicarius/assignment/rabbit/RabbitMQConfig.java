@@ -1,4 +1,4 @@
-package io.vicarius.assignment.config;
+package io.vicarius.assignment.rabbit;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import org.springframework.amqp.core.*;
