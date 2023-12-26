@@ -1,6 +1,6 @@
 package io.vicarius.assignment.user;
 
-import io.vicarius.assignment.util.Util;
+import io.vicarius.assignment.rabbit.RabbitMQService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -18,11 +18,19 @@ public class UserServiceImpl implements UserService{
     @Autowired
     UserElasticRepository userElasticRepository;
     @Autowired
-    Util util;
+    RabbitMQService rabbitMQService;
 
     public UserDTO create(UserDTO userDTO) {
+        validateCreate(userDTO);
+        UserEntity userEntity = userRepository.save(new UserEntity(userDTO));
+        userDTO.setId(userEntity.getId());
+        rabbitMQService.sendCreateOperationToQueue(userDTO);
+        return userDTO;
+    }
+
+    private void validateCreate(UserDTO userDTO){
         //Only printing functions during nighttime
-        if(!util.isDayTime())
+        if(!rabbitMQService.isDayTime())
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, UserMessages.DB_CHANGES_NOT_ALLOWED_AT_NIGHT);
         if(!StringUtils.hasText(userDTO.getFirstName()))
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, UserMessages.MISSING_FIRST_NAME);
@@ -30,21 +38,16 @@ public class UserServiceImpl implements UserService{
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, UserMessages.MISSING_LAST_NAME);
         if(userRepository.findByFirstNameAndLastName(userDTO.getFirstName(), userDTO.getLastName()).isPresent())
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, UserMessages.USER_ALREADY_EXISTS);
-
-        UserEntity userEntity = userRepository.save(new UserEntity(userDTO));
-        userDTO.setId(userEntity.getId());
-        util.sendCreateOperationToQueue(userDTO);
-        return userDTO;
     }
 
     public List<UserDTO> retrieveAll(){
-        if(util.isDayTime()){
+        if(rabbitMQService.isDayTime()){
             return userRepository.findAll()
                     .stream()
                     .map(UserDTO::new)
                     .collect(Collectors.toList());
         }else{
-            util.checkDatabaseSincronization();
+            rabbitMQService.checkDatabaseSincronization();
             return userElasticRepository.findAll()
                     .stream()
                     .map(UserDTO::new)
@@ -53,13 +56,13 @@ public class UserServiceImpl implements UserService{
     }
 
     public UserDTO retrieveById(String id){
-        if(util.isDayTime()){
+        if(rabbitMQService.isDayTime()){
             Optional<UserEntity> userEntity = userRepository.findById(id);
             if(userEntity.isEmpty())
                 throw new ResponseStatusException(HttpStatus.NOT_FOUND, UserMessages.USER_NOT_FOUND);
             return new UserDTO(userEntity.get());
         }else{
-            util.checkDatabaseSincronization();
+            rabbitMQService.checkDatabaseSincronization();
             Optional<UserDocument> userDocument = userElasticRepository.findById(id);
             if(userDocument.isEmpty())
                 throw new ResponseStatusException(HttpStatus.NOT_FOUND, UserMessages.USER_NOT_FOUND);
@@ -68,29 +71,36 @@ public class UserServiceImpl implements UserService{
     }
 
     public UserDTO update(UserDTO userDTO, String id){
-        if(!util.isDayTime())
+        validateUpdate(userDTO, id);
+        userDTO.setId(id);
+        userRepository.save(new UserEntity(userDTO));
+        rabbitMQService.sendUpdateOperationToQueue(userDTO);
+        return userDTO;
+    }
+
+    private void validateUpdate(UserDTO userDTO, String id){
+        if(!rabbitMQService.isDayTime())
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, UserMessages.DB_CHANGES_NOT_ALLOWED_AT_NIGHT);
         if(!StringUtils.hasText(userDTO.getFirstName()))
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, UserMessages.MISSING_FIRST_NAME);
         if(!StringUtils.hasText(userDTO.getLastName()))
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, UserMessages.MISSING_LAST_NAME);
-
         if(userRepository.findById(id).isEmpty())
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, UserMessages.USER_NOT_FOUND);
         if(userRepository.findByFirstNameAndLastName(userDTO.getFirstName(), userDTO.getLastName()).isPresent())
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, UserMessages.USER_ALREADY_EXISTS);
-        userDTO.setId(id);
-        userRepository.save(new UserEntity(userDTO));
-        util.sendUpdateOperationToQueue(userDTO);
-        return userDTO;
     }
 
     public void delete(String id){
-        if(!util.isDayTime())
+        validateDelete(id);
+        userRepository.deleteById(id);
+        rabbitMQService.sendUpdateOperationToQueue(new UserDTO(id));
+    }
+
+    private void validateDelete(String id){
+        if(!rabbitMQService.isDayTime())
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, UserMessages.DB_CHANGES_NOT_ALLOWED_AT_NIGHT);
         if(userRepository.findById(id).isEmpty())
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, UserMessages.USER_NOT_FOUND);
-        userRepository.deleteById(id);
-        util.sendUpdateOperationToQueue(new UserDTO(id));
     }
 }
