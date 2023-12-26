@@ -4,7 +4,6 @@ import io.vicarius.assignment.user.UserDTO;
 import io.vicarius.assignment.user.UserMessages;
 import io.vicarius.assignment.user.UserRepository;
 import io.vicarius.assignment.user.UserServiceImpl;
-import io.vicarius.assignment.util.Util;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -21,6 +20,8 @@ public class QuotaServiceImpl implements QuotaService{
     QuotaRepository quotaRepository;
     @Autowired
     UserRepository userRepository;
+    public static Integer QUOTA_LIMIT = System.getenv("QUOTA_LIMIT") != null ?
+            Integer.valueOf(System.getenv("QUOTA_LIMIT")) : 5;
 
     public String consume(String id){
         int totalRequestsMade;
@@ -33,14 +34,14 @@ public class QuotaServiceImpl implements QuotaService{
             totalRequestsMade = 1;
         }else{
             Quota quota = quotaOptional.get();
-            if(quota.getTotalRequestsMade() == Util.QUOTA_LIMIT){
+            if(quota.getTotalRequestsMade() == QUOTA_LIMIT){
                 throw new ResponseStatusException(HttpStatus.FORBIDDEN, QuotaMessages.QUOTA_LIMIT_REACHED);
             }
             quota.setTotalRequestsMade(quota.getTotalRequestsMade()+1);
             quota = quotaRepository.save(quota);
             totalRequestsMade = quota.getTotalRequestsMade();
         }
-        return "Total requests remaining for this user: " + (Util.QUOTA_LIMIT - totalRequestsMade);
+        return "Total requests remaining for this user: " + (QUOTA_LIMIT - totalRequestsMade);
     }
 
     public List<UserDTO> getUsersQuota(){
@@ -49,9 +50,9 @@ public class QuotaServiceImpl implements QuotaService{
         for(UserDTO userDTO: userDTOS){
             quota = quotaRepository.findById(userDTO.getId());
             if(quota.isPresent()){
-                userDTO.setRequestsRemaining(Util.QUOTA_LIMIT - quota.get().getTotalRequestsMade());
+                userDTO.setRequestsRemaining(QUOTA_LIMIT - quota.get().getTotalRequestsMade());
             }else{
-                userDTO.setRequestsRemaining(Util.QUOTA_LIMIT);
+                userDTO.setRequestsRemaining(QUOTA_LIMIT);
             }
         }
         return userDTOS;
