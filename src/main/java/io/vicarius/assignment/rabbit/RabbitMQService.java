@@ -1,7 +1,7 @@
-package io.vicarius.assignment.util;
+package io.vicarius.assignment.rabbit;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.vicarius.assignment.config.RabbitMQConfig;
+import io.vicarius.assignment.rabbit.RabbitMQConfig;
 import io.vicarius.assignment.user.UserDTO;
 import io.vicarius.assignment.user.UserDocument;
 import io.vicarius.assignment.user.UserElasticRepository;
@@ -14,7 +14,7 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 
 @Service
-public class Util {
+public class RabbitMQService {
     @Autowired
     RabbitTemplate rabbitTemplate;
     @Autowired
@@ -23,8 +23,7 @@ public class Util {
     public static final String OPERATION_CREATE = "create";
     public static final String OPERATION_UPDATE = "update";
     public static final String OPERATION_DELETE = "delete";
-    public static Integer QUOTA_LIMIT = System.getenv("QUOTA_LIMIT") != null ?
-            Integer.valueOf(System.getenv("QUOTA_LIMIT")) : 5;
+
 
     public void sendCreateOperationToQueue(UserDTO userDTO){
         userDTO.setOperation(OPERATION_CREATE);
