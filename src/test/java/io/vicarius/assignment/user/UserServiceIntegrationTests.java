@@ -1,7 +1,5 @@
 package io.vicarius.assignment.user;
 
-import io.vicarius.assignment.user.UserDTO;
-import io.vicarius.assignment.user.UserServiceImpl;
 import io.vicarius.assignment.rabbit.RabbitMQService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,7 +18,7 @@ import static org.junit.jupiter.api.Assertions.*;
 @AutoConfigureMockMvc
 @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.ANY)
-class UserServiceTests {
+class UserServiceIntegrationTests {
     @Autowired
     private UserServiceImpl userService;
     private RabbitMQService rabbitMQService = new RabbitMQService();

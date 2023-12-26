@@ -1,7 +1,6 @@
 package io.vicarius.assignment.user;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.vicarius.assignment.user.UserDTO;
 import io.vicarius.assignment.rabbit.RabbitMQService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,7 +20,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.ANY)
-class UserControllerTests {
+class UserControllerIntegrationTests {
 
 	@Autowired
 	private MockMvc mockMvc;

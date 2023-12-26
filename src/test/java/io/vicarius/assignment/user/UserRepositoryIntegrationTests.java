@@ -1,7 +1,5 @@
 package io.vicarius.assignment.user;
 
-import io.vicarius.assignment.user.UserEntity;
-import io.vicarius.assignment.user.UserRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
@@ -18,7 +16,7 @@ import static org.junit.jupiter.api.Assertions.*;
 @AutoConfigureMockMvc
 @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.ANY)
-class UserRepositoryTests {
+class UserRepositoryIntegrationTests {
     @Autowired
     private UserRepository userRepository;
 
