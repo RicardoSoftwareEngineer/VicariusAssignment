@@ -1,8 +1,8 @@
-package io.vicarius.assignment;
+package io.vicarius.assignment.user;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.vicarius.assignment.user.UserDTO;
-import io.vicarius.assignment.util.Util;
+import io.vicarius.assignment.rabbit.RabbitMQService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
@@ -21,18 +21,18 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.ANY)
-class UserControllerIntegrationTests {
+class UserControllerTests {
 
 	@Autowired
 	private MockMvc mockMvc;
 
 	@Autowired
 	ObjectMapper objectMapper;
-	private Util util = new Util();
+	private RabbitMQService rabbitMQService = new RabbitMQService();
 	@Test
 	void testCreateUser() throws Exception {
 		UserDTO user = new UserDTO("Ricardo", "Ribeiro");
-		if(util.isDayTime()){
+		if(rabbitMQService.isDayTime()){
 			mockMvc.perform(post("/user/v1")
 							.contentType(MediaType.APPLICATION_JSON)
 							.content(objectMapper.writeValueAsString(user)))
@@ -41,7 +41,7 @@ class UserControllerIntegrationTests {
 					.andExpect(jsonPath("$.firstName").value(user.getFirstName()))
 					.andExpect(jsonPath("$.lastName").value(user.getLastName()));
 		}
-		if(!util.isDayTime()){
+		if(!rabbitMQService.isDayTime()){
 			mockMvc.perform(post("/user/v1")
 							.contentType(MediaType.APPLICATION_JSON)
 							.content(objectMapper.writeValueAsString(user)))
@@ -52,7 +52,7 @@ class UserControllerIntegrationTests {
 	@Test
 	void testRetrieveUsers() throws Exception {
 		UserDTO user1 = new UserDTO("Ricardo", "Ribeiro");
-		if(util.isDayTime()){
+		if(rabbitMQService.isDayTime()){
 			mockMvc.perform(post("/user/v1")
 							.contentType(MediaType.APPLICATION_JSON)
 							.content(objectMapper.writeValueAsString(user1)))
@@ -72,7 +72,7 @@ class UserControllerIntegrationTests {
 					.andExpect(jsonPath("$[1].firstName").value(user2.getFirstName()))
 					.andExpect(jsonPath("$[1].lastName").value(user2.getLastName()));
 		}
-		if(!util.isDayTime()){
+		if(!rabbitMQService.isDayTime()){
 			mockMvc.perform(get("/user/v1"))
 					.andExpect(status().isOk());
 		}
@@ -81,7 +81,7 @@ class UserControllerIntegrationTests {
 	@Test
 	void testRetrieveUserById() throws Exception {
 		UserDTO user = new UserDTO("Ricardo", "Ribeiro");
-		if(util.isDayTime()){
+		if(rabbitMQService.isDayTime()){
 			String contentAsString = mockMvc.perform(post("/user/v1")
 							.contentType(MediaType.APPLICATION_JSON)
 							.content(objectMapper.writeValueAsString(user)))
@@ -104,7 +104,7 @@ class UserControllerIntegrationTests {
 	@Test
 	void testUpdateUser() throws Exception {
 		UserDTO user = new UserDTO("Ricardo", "Ribeiro");
-		if(util.isDayTime()){
+		if(rabbitMQService.isDayTime()){
 			String contentAsString = mockMvc.perform(post("/user/v1")
 							.contentType(MediaType.APPLICATION_JSON)
 							.content(objectMapper.writeValueAsString(user)))
@@ -132,7 +132,7 @@ class UserControllerIntegrationTests {
 					.andExpect(jsonPath("$.firstName").value(user.getFirstName()))
 					.andExpect(jsonPath("$.lastName").value(user.getLastName()));
 		}
-		if(!util.isDayTime()){
+		if(!rabbitMQService.isDayTime()){
 			mockMvc.perform(put("/user/v1/{id}", "userId")
 							.contentType(MediaType.APPLICATION_JSON)
 							.content(objectMapper.writeValueAsString(user)))
@@ -143,7 +143,7 @@ class UserControllerIntegrationTests {
 	@Test
 	void testDeleteUser() throws Exception {
 		UserDTO user = new UserDTO("Ricardo", "Ribeiro");
-		if(util.isDayTime()){
+		if(rabbitMQService.isDayTime()){
 			String contentAsString = mockMvc.perform(post("/user/v1")
 							.contentType(MediaType.APPLICATION_JSON)
 							.content(objectMapper.writeValueAsString(user)))
@@ -161,7 +161,7 @@ class UserControllerIntegrationTests {
 			mockMvc.perform(get("/user/v1/{id}", userId))
 					.andExpect(status().isNotFound());
 		}
-		if(!util.isDayTime()){
+		if(!rabbitMQService.isDayTime()){
 			mockMvc.perform(delete("/user/v1/{id}", "userId"))
 					.andExpect(status().isForbidden());
 		}
@@ -170,7 +170,7 @@ class UserControllerIntegrationTests {
 	@Test
 	void testUserIdempotency() throws Exception {
 		UserDTO user = new UserDTO("Ricardo", "Ribeiro");
-		if(util.isDayTime()){
+		if(rabbitMQService.isDayTime()){
 			mockMvc.perform(post("/user/v1")
 							.contentType(MediaType.APPLICATION_JSON)
 							.content(objectMapper.writeValueAsString(user)))
@@ -189,7 +189,7 @@ class UserControllerIntegrationTests {
 	@Test
 	void testUserMissingField() throws Exception {
 		UserDTO user = new UserDTO("Ricardo", "Ribeiro");
-		if(util.isDayTime()){
+		if(rabbitMQService.isDayTime()){
 			user.setFirstName(null);
 			mockMvc.perform(post("/user/v1")
 							.contentType(MediaType.APPLICATION_JSON)

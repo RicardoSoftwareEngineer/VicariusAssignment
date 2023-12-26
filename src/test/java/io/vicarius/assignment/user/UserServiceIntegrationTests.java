@@ -1,8 +1,8 @@
-package io.vicarius.assignment;
+package io.vicarius.assignment.user;
 
 import io.vicarius.assignment.user.UserDTO;
 import io.vicarius.assignment.user.UserServiceImpl;
-import io.vicarius.assignment.util.Util;
+import io.vicarius.assignment.rabbit.RabbitMQService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
@@ -20,20 +20,20 @@ import static org.junit.jupiter.api.Assertions.*;
 @AutoConfigureMockMvc
 @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.ANY)
-class UserServiceIntegrationTests {
+class UserServiceTests {
     @Autowired
     private UserServiceImpl userService;
-    private Util util = new Util();
+    private RabbitMQService rabbitMQService = new RabbitMQService();
 
     @Test
     void testCreateUser(){
         UserDTO user = new UserDTO("Ricardo", "Ribeiro");
-        if(util.isDayTime()){
+        if(rabbitMQService.isDayTime()){
             assertNull(user.getId());
             user = userService.create(user);
             assertNotNull(user.getId());
         }
-        if(!util.isDayTime()){
+        if(!rabbitMQService.isDayTime()){
             UserDTO finalUser = user;
             ResponseStatusException exception = assertThrows(ResponseStatusException.class, () -> {
                 userService.create(finalUser);
@@ -46,7 +46,7 @@ class UserServiceIntegrationTests {
     void testRetrieveUsers() {
         UserDTO user1 = new UserDTO("Ricardo", "Ribeiro");
         UserDTO user2 = new UserDTO("Ricardo", "Rib");
-        if(util.isDayTime()){
+        if(rabbitMQService.isDayTime()){
             userService.create(user1);
             userService.create(user2);
             List<UserDTO> users = userService.retrieveAll();
@@ -57,7 +57,7 @@ class UserServiceIntegrationTests {
             assertEquals(user2.getFirstName(), users.get(1).getFirstName());
             assertEquals(user2.getLastName(), users.get(1).getLastName());
         }
-        if(!util.isDayTime()){
+        if(!rabbitMQService.isDayTime()){
             UserDTO finalUser = user1;
             ResponseStatusException exception = assertThrows(ResponseStatusException.class, () -> {
                 userService.create(finalUser);
@@ -71,7 +71,7 @@ class UserServiceIntegrationTests {
     @Test
     void testRetrieveUserById(){
         UserDTO user = new UserDTO("Ricardo", "Ribeiro");
-        if(util.isDayTime()){
+        if(rabbitMQService.isDayTime()){
             user = userService.create(user);
             UserDTO userFromDB = userService.retrieveById(user.getId());
             assertNotNull(userFromDB);
@@ -79,7 +79,7 @@ class UserServiceIntegrationTests {
             assertEquals(user.getFirstName(), userFromDB.getFirstName());
             assertEquals(user.getLastName(), userFromDB.getLastName());
         }
-        if(!util.isDayTime()){
+        if(!rabbitMQService.isDayTime()){
             UserDTO finalUser = user;
             ResponseStatusException exception = assertThrows(ResponseStatusException.class, () -> {
                 userService.create(finalUser);
@@ -93,9 +93,9 @@ class UserServiceIntegrationTests {
     }
 
     @Test
-    void testUpdateUser() throws Exception {
+    void testUpdateUser(){
         UserDTO user = new UserDTO("Ricardo", "Ribeiro");
-        if(util.isDayTime()){
+        if(rabbitMQService.isDayTime()){
             user = userService.create(user);
             user.setFirstName("Ric");
             user.setLastName("Rib");
@@ -105,7 +105,7 @@ class UserServiceIntegrationTests {
             assertEquals(userFromDB.getFirstName(), user.getFirstName());
             assertEquals(userFromDB.getLastName(), user.getLastName());
         }
-        if(!util.isDayTime()){
+        if(!rabbitMQService.isDayTime()){
             UserDTO finalUser = user;
             ResponseStatusException exception = assertThrows(ResponseStatusException.class, () -> {
                 userService.update(finalUser, "userId");
@@ -115,9 +115,9 @@ class UserServiceIntegrationTests {
     }
 
     @Test
-    void testDeleteUser() throws Exception {
+    void testDeleteUser() {
         UserDTO user = new UserDTO("Ricardo", "Ribeiro");
-        if(util.isDayTime()){
+        if(rabbitMQService.isDayTime()){
             user = userService.create(user);
             user = userService.retrieveById(user.getId());
             assertNotNull(user);
@@ -128,7 +128,7 @@ class UserServiceIntegrationTests {
             });
             assertEquals(HttpStatus.NOT_FOUND, exception.getStatusCode());
         }
-        if(!util.isDayTime()){
+        if(!rabbitMQService.isDayTime()){
             ResponseStatusException exception = assertThrows(ResponseStatusException.class, () -> {
                 userService.delete("userId");
             });
@@ -137,9 +137,9 @@ class UserServiceIntegrationTests {
     }
 
     @Test
-    void testUserIdempotency() throws Exception {
+    void testUserIdempotency() {
         UserDTO user = new UserDTO("Ricardo", "Ribeiro");
-        if(util.isDayTime()){
+        if(rabbitMQService.isDayTime()){
             user = userService.create(user);
             user = userService.retrieveById(user.getId());
             assertNotNull(user);
@@ -152,8 +152,8 @@ class UserServiceIntegrationTests {
     }
 
     @Test
-    void testUserMissingField() throws Exception {
-        if(util.isDayTime()){
+    void testUserMissingField() {
+        if(rabbitMQService.isDayTime()){
             ResponseStatusException exception = assertThrows(ResponseStatusException.class, () -> {
                 UserDTO user = new UserDTO("Ricardo", "Ribeiro");
                 user.setFirstName(null);
