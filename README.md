@@ -1,27 +1,27 @@
 # Vicarius assignment
 
-## Requirements:
-#### - User CRUD operations.
-#### - Robust access-limiting mechanism through shared cache.
-#### - Synchronization between 2 databases through message queue.
-#### - SQL database during daytime and Elasticsearch during nighttime.
-
+## How it Works:
+This microservice is designed to be scalable, providing the following capabilities:
+- CRUD operations for the User entity.
+- Switching between two databases: using a SQL database during the day and Elasticsearch at night.
+- Database synchronization facilitated through a message queue system.
+- Robust access-limiting mechanism implemented for the "/quota/consume" endpoint via shared cache.
 
 ## Architecture:
-#### - Is important to say that this microservice was made with scalability in mind, the idea is to get a thousand or more instances of this connecting to the same Redis, RabbitMQ, Elastic and SQL services. H2 was choose for simplicity’s sake, this is just a proof of concept. For production deployment is better to replace with Postgres or MariaDB.
-#### - RabbitMQ used for database synchronization.
-#### - H2 database used as SQL database during daytime.
-#### - Elasticsearch used as NoSQL database during nighttime.
-#### - Redis used as shared cache to limit the requests number per user.
-#### - Configurable maximum requests per user through the environment variable:
-+ QUOTA_LIMIT (default value: 5)
+#### Built with scalability in mind, aiming to get a thousand or more instances connecting to the same Redis, RabbitMQ, Elastic, and SQL services. H2 was chosen for simplicity's sake, primarily as a proof of concept. For production deployment, it's recommended to use Postgres or MariaDB.
+#### RabbitMQ is utilized for database synchronization.
+#### H2 database serves as the SQL database during daytime.
+#### Elasticsearch functions as the NoSQL database during nighttime.
+#### Redis acts as shared cache, limiting the number of requests per user in all instances.
+#### The maximum requests per user can be configured through the environment variable:
+    - QUOTA_LIMIT (default value: 5)
 
 ## How to get up and running:
-#### - Run "docker compose up" in the project´s directory to get:
+#### - Run "docker-compose up" in the project's directory to set up:
 + RabbitMQ
 + Redis cache
-+ Elastic search
-#### - The project will use these services without any configuration of yours.
++ Elasticsearch
+#### - The project will automatically use these services without requiring any configuration.
 #### - Import the pom file as a maven project.
 #### - Start the Spring Boot project.
 
